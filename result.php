@@ -11,10 +11,10 @@ include_once(dirname(__FILE__) . '/JnuJwc.class.php');
 
 $jwc = new JnuJwc();
 if (!isset($_POST['stu_id']) || !isset($_POST['stu_pass']) || empty($_POST['stu_id']) || empty($_POST['stu_pass'])) {
-    die('Post error!');
+    err('Post error!');
 }
 if (!$jwc->login($_POST['stu_id'], $_POST['stu_pass'])) {
-    die('Login error!');
+    err('Login error!');
 }
 
 $s = $jwc->get_score();
@@ -26,3 +26,10 @@ $rsp->stu_major = JnuJwc::_2utf8($jwc->current_stu_major);
 $rsp->stu_score = $s;
 
 echo json_encode($rsp);
+
+function err($ErrMsg) {
+    header('HTTP/1.1 405 Method Not Allowed');
+    header('Content-Type:text/plain; charset=utf-8');
+    echo $ErrMsg;
+    exit;
+}
