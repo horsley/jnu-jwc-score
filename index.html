@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>暨南大学成绩速查</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.min.css" type="text/css">
+    <style>body{font-family: "微软雅黑", "Helvetica Neue",Helvetica,Arial,sans-serif;}</style>
+</head>
+<body>
+    <div class="container" style="margin-top: 5em">
+        <div style="text-align: center;">
+            <h1 style="font-weight: normal">暨南大学成绩速查 <small><!--一键速查，智能安抚--></small></h1>
+        </div>
+        <div id="login_panel" class="form-inline" style="text-align: center; margin: 5em 0">
+            <form method="post">
+                <input type="text" id="txt_id" name="stu_id" placeholder="输入你的学号...">
+                <input type="password" id="txt_pass" name="stu_pass" placeholder="教务系统登陆密码...">
+                <button class="btn btn-primary">查成绩</button>
+            </form>
+        </div>
+    </div>
+    <div class="container" style="text-align: center; color: #666">
+        Powered by <a href="http://weibo.com/horsley" title="开发者：horsley" target="_blank">Horsley</a> @
+        <a href="http://weibo.com/jnuna" title="暨南大学网络协会" target="_blank">JNUNA</a>
+    </div>
+</body>
+<script type="text/javascript" src="//lib.sinaapp.com/js/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="/js/jquery-1.8.2.min.js">\x3C/script>')</script>
+<script>
+    $(function(){
+        var input_id = $('#txt_id');
+        var input_pass = $('#txt_pass');
+        $('form').submit(function(){
+            if ($.trim(input_id.val()) == '') {
+                input_id.focus();
+            }
+            if ($.trim(input_pass.val()) == '') {
+                input_pass.focus();
+            }
+            $.post('/score', $('form').serialize(), function(data) {
+                $('#login_panel').parent().append('<table class="table"><thead></thead><tbody></tbody></table>').end().remove();
+                $('table').find('thead').append('<tr><th>课程名</th><th>成绩</th></tr>')
+                for (var i=0,len=data.stu_score.length; i<len; i++) {
+                    if (data.stu_score[i].score == '&nbsp;') {
+                        continue;
+                    }
+                    $('table').find('tbody').append('<tr><td>' + data.stu_score[i].name + '</td><td>' + data.stu_score[i].score + '</td></tr>');
+                }
+            }, "json");
+            return false;
+        });
+    });
+
+</script>
+</html>
