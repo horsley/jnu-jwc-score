@@ -16,11 +16,20 @@
             $un_pub[] = $si;
         }
     }
-    if (count($un_pub)) echo $rsp->stu_name. '同学，你还有 '. count($un_pub) .' 科成绩未出，分别为 ';
-    foreach ($un_pub as &$si) {
-        $si = $si['name'];
+    if (count($un_pub)) {
+        foreach ($un_pub as &$si) {
+            $si = $si['name'];
+        }
+        if (count($un_pub) > 1) {
+            echo $rsp->stu_name. '同学，你还有 '. count($un_pub) .' 科成绩未出，分别为 ';
+            echo implode(', ', $un_pub);
+        } else if (count($un_pub) == 1) {
+            echo $rsp->stu_name. '同学，你还有 '. $un_pub[0] .' 一科成绩未出';
+        }
+
     }
-    echo implode(', ', $un_pub);
+
+
     ?>
 </div>
 <table class="table table-striped">
