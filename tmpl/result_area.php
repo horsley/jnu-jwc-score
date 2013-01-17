@@ -11,9 +11,14 @@
 <div class="well well-small">
     <?
     $un_pub = array();
+    $total_gp = 0;
+    $total_credit = 0;
     foreach ($rsp->stu_score as $si) {
         if($si['score'] == '&nbsp;') {
             $un_pub[] = $si;
+        } else {
+            $total_credit += $si['credit'];
+            $total_gp += $si['gp'];
         }
     }
     if (count($un_pub)) {
@@ -26,7 +31,7 @@
         } else if (count($un_pub) == 1) {
             echo $rsp->stu_name. '同学，你还有 '. $un_pub[0] .' 一科成绩未出';
         }
-
+        echo '，本学期已获平均绩点：' . round($total_gp / $total_credit, 2);
     }
 
 
