@@ -32,6 +32,9 @@
             echo $rsp->stu_name. '同学，你还有 '. $un_pub[0] .' 一科成绩未出';
         }
         echo '，本学期已获平均绩点：' . round($total_gp / $total_credit, 2);
+    } else {
+        echo $rsp->stu_name. '同学，你本学期的全部成绩已出';
+        echo '，已获平均绩点：' . round($total_gp / $total_credit, 2);
     }
 
 
