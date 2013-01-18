@@ -7,5 +7,6 @@
 + Jan 15: 移动设备兼容性改进，项目文件结构重整，输出样式改变
 + Jan 16: 输出未出成绩科目只有一科时候的文案更改
 + Jan 17: 添加本学期平均绩点输出
++ Jan 18: Dead
 
 demo地址：[http://jnu.im/score](http://jnu.im/score)
