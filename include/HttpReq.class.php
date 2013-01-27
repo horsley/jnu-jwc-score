@@ -239,19 +239,21 @@ class HttpReq
     public function getCookies($all = true)
     {
         $header = $this->response['headers'];
-        $matches = array();
+        $matchs = array();
         $cookies = array();
         $kvs = array();
-        if (preg_match_all('/Set-Cookie:\s([^\r\n]+)/i', $header, $matches)) {
-            foreach ($matches[1] as $match) {
+        if (preg_match_all('/Set-Cookie:\s([^\r\n]+)/i', $header, $matchs)) {
+            foreach ($matchs[1] as $match) {
                 $cookie = array();
                 $items = explode(";", $match);
                 foreach ($items as $_) {
                     $item = explode("=", trim($_));
-                    $cookie[$item[0]]= @$item[1];
+                    if (count($item) == 2) {
+                        $cookie[$item[0]]= $item[1];
+                    }
                 }
                 array_push($cookies, $cookie);
-                $kvs = array_merge($kvs, $cookie); // 这里默认了一样的path 和 max-age  因为会覆盖掉，不过没关系因为这个是用来返回纯键值的
+                $kvs = array_merge($kvs, $cookie);
             }
         }
         if ($all) {

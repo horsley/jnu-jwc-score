@@ -6,7 +6,7 @@
  * Time: 下午9:03
  * To change this template use File | Settings | File Templates.
  */
-
+session_start();
 include_once(dirname(__FILE__) . '/include/JnuJwc.class.php');
 include_once(dirname(__FILE__) . '/include/functions.php');
 
@@ -14,7 +14,12 @@ $jwc = new JnuJwc();
 if (!isset($_POST['stu_id']) || !isset($_POST['stu_pass']) || empty($_POST['stu_id']) || empty($_POST['stu_pass'])) {
     redirect(get_baseurl());
 }
-if (!$jwc->login($_POST['stu_id'], $_POST['stu_pass'])) {
+
+$login_flag = false;
+do {
+    $login_flag = $jwc->login($_POST['stu_id'], $_POST['stu_pass']);
+} while(!$login_flag && $jwc->last_error == JnuJwc::ERR_VCODE);
+if (!$login_flag) {
     redirect(get_baseurl(), 3, '密码错误！3秒后跳回登陆页重试');
 }
 

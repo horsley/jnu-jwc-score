@@ -7,6 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 include_once(dirname(__FILE__) . '/HttpReq.class.php');
+include_once(dirname(__FILE__) . '/vc_recognize.php');
 
 class JnuJwc {
     private $http;
@@ -16,13 +17,44 @@ class JnuJwc {
     public $current_stu = '';
     public $current_stu_name = '';
     public  $current_stu_major = '';
+    public $last_error = '';
 
     const JWC_LOGIN_URL = 'http://jwc.jnu.edu.cn/web/Login.aspx';
     const JWC_SCORE_URL = 'http://jwc.jnu.edu.cn/web/Secure/Cjgl/Cjgl_Cjcx_XsCxXqCj.aspx';
+    const JWC_VCODE_URL = 'http://jwc.jnu.edu.cn/web/ValidateCode.aspx';
+    const JWC_CONTENT_TYPE = 'Content-Type: text/html; charset=gb2312';
+    const JWC_PASS_ERROR = '不相符合';
+    const ERR_PASS = '密码错误';
+    const ERR_VCODE = '可能是验证码错误';
 
     function __construct() {
         $this->http = new HttpReq();
     }
+
+    function save_state() {
+        return array(
+            'c' => $this->cookies,
+            'h' => $this->last_html,
+        );
+    }
+
+    function load_state($data) {
+        $this->cookies = $data['c'];
+        $this->last_html = $data['h'];
+    }
+
+    /**
+     * 取登陆页的验证码
+     * @return mixed
+     */
+    function get_verifycode() {
+        do {
+            $one_pic = $this->_http_request(JnuJwc::JWC_VCODE_URL, false);
+            file_put_contents('1.png', $one_pic);
+        } while (!$result = vc_recognize(vc2str($one_pic)));
+        return $result;
+    }
+
     /**
      * 从代码中抽取EVENTVALIDATION 和 VIEWSTATE
      * @param $page_html
@@ -39,16 +71,6 @@ class JnuJwc {
         }
 
         return array();
-    }
-
-    /**
-     * 取登陆页的验证码
-     * @param $login_page_html
-     * @return mixed
-     */
-    static function get_verifycode($login_page_html) {
-        preg_match('/id="lblFJM".*>(\d+)</', $login_page_html, $result1);
-        return $result1[1];
     }
 
     /**
@@ -131,9 +153,12 @@ class JnuJwc {
      */
     public function login($username, $password) {
         $this->current_stu = $username;
-        $verifycode = JnuJwc::get_verifycode($this->_http_request(JnuJwc::JWC_LOGIN_URL));
+        $this->http->setMethod('GET');
+        $this->_http_request(JnuJwc::JWC_LOGIN_URL);
+        $verifycode = JnuJwc::get_verifycode();
 
         $this->http->setMethod('POST');
+        $this->http->setHeader('Referer', JnuJwc::JWC_LOGIN_URL);
         $this->_http_setPostData(array(
             'txtYHBS' => $username,
             'txtYHMM' => $password,
@@ -141,7 +166,16 @@ class JnuJwc {
             'btnLogin' => JnuJwc::_2gbk('登 录(Login)')
         ));
         $this->_http_request(JnuJwc::JWC_LOGIN_URL);
-        return $this->http->response['info']['http_code'] === 302;
+        if ($this->http->response['info']['http_code'] === 302) {
+            return true;
+        } elseif ($this->http->response['info']['http_code'] === 200) {
+            if (strpos($this->last_html, JnuJwc::_2gbk(JnuJwc::JWC_PASS_ERROR)) !== false) {
+                $this->last_error = JnuJwc::ERR_PASS;
+            } else {
+                $this->last_error = JnuJwc::ERR_VCODE;
+            }
+            return false;
+        }
     }
 
     /**
@@ -188,7 +222,9 @@ class JnuJwc {
         //////// after hook ////////
 
         if ($ret) {
-            $this->last_html = $ret;
+            if (strpos($this->http->getHeaders(false), JnuJwc::JWC_CONTENT_TYPE) !== false) {
+                $this->last_html = $ret;
+            }
             $this->_http_save_cookies();
         }
 
